@@ -15,42 +15,55 @@ const rl = readline.createInterface({
     output: process.stdout,
 });
 
-async function createCandidate() {
+async function createCandidate(firstName, lastName, email) {
 
     try {
         const response = await axios.post(
             `${base_url}/candidates`,
             {
-                copy_requested: true,
-                dob: "1964-03-15",
-                driver_license_number: "981736076",
-                driver_license_state: "CT",
-                email: "michael.scott@gmail.com",
-                first_name: "Michael",
-                last_name: "Scott",
-                middle_name: "Gary",
-                phone: "2035408926",
-                ssn: "151-11-2001",
-                work_locations: [{ country: "US" }],
-                zipcode: "06831",
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
             },
             config
         );
 
-        console.log("---------------------------------------------------------");
         console.log("Candidate creation response:", response.data);
-        console.log("---------------------------------------------------------");
         return response.data;
     } catch (error) {
         console.error("An error occurred", error.message);
-        console.log("---------------------------------------------------------");
-        console.log("An error occurred", error);
-        console.log("---------------------------------------------------------");
     }
 }
 
+async function getPackages() {
+    const response = await axios.get(`${base_url}/packages`, config)
+    // console.log(response.data);
+    let packages = response.data
+    const slugs = packages.data.filter(item => item.slug)
+    console.log(slugs);
+    return slugs
+}
+
+async function createInvitation(firstName, lastName, email) {
+    let candidateData = await createCandidate(firstName, lastName, email)
+    let packageName = await getPackages()
+    try {
+        const response = await axios.post(
+            `${base_url}/invitations`,
+            {
+                candidate_id: candidateData.id,
+                package: packageName,
+            },
+            config
+        );
+        console.log(response.data);
+    }
+    catch (error) {
+
+    }
+}
 const read = () => {
-    console.log("1. Create Candidate\n2. Create Invitation");
+    console.log("1. Create Candidate\n2. Create Invitation\n3. Get Package");
     rl.question("Select option: ", (userInput) => {
         if (userInput.toLowerCase() === "exit") {
             console.log("Goodbye!");
@@ -77,6 +90,9 @@ async function main(value) {
             case 2:
                 console.log("Created Invitation\n");
                 break;
+            case 3:
+                await getPackages();
+                break
             default:
                 console.log("Invalid option\n");
         }
