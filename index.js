@@ -37,7 +37,6 @@ async function createCandidate(firstName, lastName, email) {
 
 async function getPackages() {
     const response = await axios.get(`${base_url}/packages`, config)
-    // console.log(response.data);
     let packages = response.data
     const slugs = packages.data.filter(item => item.slug)
     console.log(slugs);
@@ -88,6 +87,7 @@ async function main(value) {
                 console.log("Created candidate\n");
                 break;
             case 2:
+                await createInvitation()
                 console.log("Created Invitation\n");
                 break;
             case 3:
